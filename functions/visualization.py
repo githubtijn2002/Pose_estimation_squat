@@ -112,14 +112,39 @@ def analyze_frames_2D(vid_filepath, new_kpts, indices):
         ret, frame = cap.read()
         if i%2 != 0 or not ret:
             continue
+        if i not in indices:
+            continue
         keypoints_relevant = new_kpts[i//2]
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = cv2.resize(img, (640, 480))
         img = show2Dpose(keypoints_relevant, img)
-        if i in indices:
-            cv2.imshow(f'ALERT: CORRECT POSE DETECTED at frame {i//2}', img)
-        else:
-            cv2.imshow(f'Frame {i//2}', img)
+        cv2.imshow(f'Frame {i//2}', img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         
+def visualize_reps(boxes, divisor, total_frames):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from functions.processing.boxes import analyze_boxes
+
+    check_quick = [np.array([box[i][1] for box in boxes if box is not None]) for i in range(2)]
+    box_heights = check_quick[1] - check_quick[0]
+    mean_height = np.mean(box_heights)
+    below_mean_indices = np.where(box_heights < 0.75 * mean_height)[0]
+    extra_frames = int(np.round((total_frames // divisor) * 0.05))
+    min_range = below_mean_indices - extra_frames
+    max_range = below_mean_indices + extra_frames
+
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(box_heights)
+    plt.axhline(mean_height, color='r', linestyle='--', label='Mean Height')
+    plt.scatter(below_mean_indices, box_heights[below_mean_indices], color='orange', label='Below 75% Mean Height', zorder=5)
+    # plot the ranges of extra frames around the indices
+    for i in range(len(min_range)):
+        plt.axvspan(min_range[i], max_range[i], color='yellow', alpha=0.3, label='Extra Frame Range' if i == 0 else "")
+    plt.title('Box Heights Over Frames')
+    plt.xlabel('Frame Index')
+    plt.ylabel('Box Height')
+    plt.legend()
+    plt.show()

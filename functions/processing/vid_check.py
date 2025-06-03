@@ -114,3 +114,19 @@ def remove_blacklist(blacklist):
             print(f"Removed {vid_filepath} from blacklist.")
         else:
             print(f"File {vid_filepath} does not exist.")
+
+def test_vid_check(vid_path, img_path, box_model, pose_model, n_check=5, det_lim=3, conf_thresh=0.25, idx=(4, -1)):
+    import os
+    empty_imgdir(img_path)
+    idx = (4, -1)
+    n_check = 5
+    det_lim = 3
+    conf_thresh = 0.25
+    for path in [img_path, vid_path]:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    blacklist = check_vids(box_model=box_model, pose_model=pose_model, vid_path=vid_path, img_path=img_path,
+                        n_check=n_check, n_lim=det_lim, conf_thresh=conf_thresh, idx=idx)
+    remove_blacklist(blacklist)
+
