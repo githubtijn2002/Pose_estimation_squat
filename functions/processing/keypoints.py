@@ -11,7 +11,7 @@ def get_start_end_indices(indices):
             end.append(indices[i])
     return start, end
 
-def get_squat_reps(indices, boxes_new, vid_filepath, box_model, pose_model):
+def get_squat_reps(indices, boxes_new, vid_filepath, box_model, pose_model, half_frames=False):
     import cv2
     import numpy as np
     from functions.boxmodel import get_box
@@ -33,8 +33,9 @@ def get_squat_reps(indices, boxes_new, vid_filepath, box_model, pose_model):
         ret, frame = cap.read()
         if i % divisor*5 == 0:
             print(f'Processed frame {i+1}/{total_frames}')
-        if i % 2 != 0 or not ret:
-            continue
+        if half_frames:
+            if i % 2 != 0:
+                continue
         if i < start[j]:
             continue
         if i > end[j]:
